@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Инвестиционный калькулятор от Х инвестиции — подберите портфель под ваш профиль риска.">
+  <title>Калькулятор — Х инвестиции</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</text></svg>">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="logo">Х инвестиции</div>
+      <nav class="nav" id="mainNav">
+        <a href="index.html#smart-money" class="nav-link">Smart Money</a>
+        <a href="index.html#algo-trading" class="nav-link">Algo trading</a>
+        <a href="index.html#crypto" class="nav-link">Crypto</a>
+        <a href="index.html#about" class="nav-link">О нас</a>
+        <a href="index.html" class="nav-link">Главная</a>
+      </nav>
+      <button class="burger" id="burgerBtn" aria-label="Меню">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Disclaimer Banner -->
+  <div class="disclaimer-banner">
+    ⚠️ Информация не является индивидуальной инвестиционной рекомендацией (ИР) в соответствии с законодательством РФ.
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-step active" data-step="1">1</div>
+      <div class="progress-step" data-step="2">2</div>
+      <div class="progress-step" data-step="3">3</div>
+      <div class="progress-step" data-step="4">4</div>
+    </div>
+    <div class="progress-label" id="progressLabel">Шаг 1 из 4</div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="calculator-container">
+    <div class="step" id="step-profile" data-step="1">
+      <h2>Выберите ваш профиль риска</h2>
+      <p>Просто извлеките максимальную выгоду из своих активов — с помощью интеллектуальных решений, низких затрат и персонализированной поддержки в режиме реального времени.</p>
+      <div class="profile-cards">
+        <div class="profile-card" data-profile="conservative">
+          <h3>Консервативный</h3>
+          <p>Минимум риска, стабильный доход</p>
+        </div>
+        <div class="profile-card" data-profile="balanced">
+          <h3>Сбалансированный</h3>
+          <p>Умеренный риск, рост + доход</p>
+        </div>
+        <div class="profile-card" data-profile="aggressive">
+          <h3>Агрессивный</h3>
+          <p>Максимум роста, высокий риск</p>
+        </div>
+      </div>
+      <button class="btn-next" disabled>Далее</button>
+    </div>
+
+    <div class="step hidden" id="step-management" data-step="2">
+      <h2>Тип управления</h2>
+      <p>Выберите подход, который вам ближе: автоматическое управление или самостоятельное.</p>
+      <div class="toggle-group">
+        <label class="toggle-option active" data-type="passive">
+          <input type="radio" name="management" value="passive" checked>
+          <span>Пассивное</span>
+        </label>
+        <label class="toggle-option" data-type="active">
+          <input type="radio" name="management" value="active">
+          <span>Активное</span>
+        </label>
+      </div>
+      <button class="btn-prev">Назад</button>
+      <button class="btn-next">Далее</button>
+    </div>
+
+    <div class="step hidden" id="step-allocation" data-step="3">
+      <h2>Распределение капитала</h2>
+      <p>Сумма инвестиций: <strong>1 000 000 ₽</strong></p>
+      <div class="allocation-inputs">
+        <div class="alloc-item">
+          <label>Акции (%)</label>
+          <input type="number" min="0" max="100" value="0" id="alloc-stocks">
+        </div>
+        <div class="alloc-item">
+          <label>Облигации (%)</label>
+          <input type="number" min="0" max="100" value="0" id="alloc-bonds">
+        </div>
+        <div class="alloc-item">
+          <label>ETF (%)</label>
+          <input type="number" min="0" max="100" value="0" id="alloc-etf">
+        </div>
+        <div class="alloc-item">
+          <label>Криптовалюта (%)</label>
+          <input type="number" min="0" max="100" value="0" id="alloc-crypto">
+        </div>
+      </div>
+      <div class="allocation-summary">
+        <p>Текущая сумма: <span id="alloc-sum">0%</span> (<span id="alloc-remaining">100%</span> до 100%)</p>
+      </div>
+      <button class="btn-prev">Назад</button>
+      <button class="btn-next" id="btn-submit">Получить портфель</button>
+    </div>
+
+    <div class="step hidden result-step" id="step-result" data-step="4">
+      <h2>Ваш базовый портфель</h2>
+      <p>На основе вашего профиля и предпочтений мы сформировали оптимальное распределение.</p>
+      <div class="asset-cards">
+        <div class="asset-card">
+          <h3>Акции</h3>
+          <ul>
+            <li>SBER</li>
+            <li>GAZP</li>
+            <li>AAPL</li>
+          </ul>
+        </div>
+        <div class="asset-card">
+          <h3>Облигации</h3>
+          <ul>
+            <li>ОФЗ 26235</li>
+            <li>Роснефть BO-001P-01</li>
+          </ul>
+        </div>
+        <div class="asset-card">
+          <h3>ETF</h3>
+          <ul>
+            <li>FXRL</li>
+            <li>SBMX</li>
+          </ul>
+        </div>
+        <div class="asset-card">
+          <h3>Криптовалюта</h3>
+          <ul>
+            <li>BTC</li>
+            <li>ETH</li>
+          </ul>
+        </div>
+      </div>
+      <div class="report-actions">
+        <button class="btn-download" id="btn-free-report">Скачать текстовый отчёт</button>
+      </div>
+      <div class="premium-upsell">
+        <h3>Хотите персонализированный PDF-отчёт?</h3>
+        <p>Подробный анализ, сценарии, налоговая эффективность — всего за <strong>290 ₽</strong></p>
+        <button class="btn-premium" id="btn-premium">Получить за 290 ₽</button>
+      </div>
+    </div>
+
+    <div class="step hidden" id="step-premium-form">
+      <h2>Получите персонализированный отчёт</h2>
+      <p>Введите ваш email, чтобы получить PDF-отчёт после оплаты.</p>
+      <form id="premiumForm">
+        <div class="form-group">
+          <input type="email" id="email" required placeholder="ваш@email.ru">
+        </div>
+        <div class="checkbox">
+          <input type="checkbox" id="consent" required>
+          <label for="consent">Согласен на обработку персональных данных</label>
+        </div>
+        <button type="submit" class="btn-pay">Оплатить 290 ₽</button>
+      </form>
+      <button class="btn-prev">Назад</button>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2025 Х инвестиции. Все права защищены.</p>
+      </div>
+    </div>
+  </footer>
+
+  <button id="backToTop" class="back-to-top" aria-label="Наверх">↑</button>
+
+  <script>
+    const state = { currentStep: 1, profile: null, management: 'passive' };
+    const steps = document.querySelectorAll('.step');
+    const progressBarSteps = document.querySelectorAll('.progress-step');
+    const progressLabel = document.getElementById('progressLabel');
+
+    function goToStep(step) {
+      if (step < 1 || step > 5) return;
+      state.currentStep = step;
+      steps.forEach(s => s.classList.add('hidden'));
+      document.querySelector(`.step[data-step="${step}"]`).classList.remove('hidden');
+      progressBarSteps.forEach((el, i) => el.classList.toggle('active', i + 1 <= step));
+      progressLabel.textContent = `Шаг ${step} из 4`;
+    }
+
+    document.querySelectorAll('.profile-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.profile-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        state.profile = card.dataset.profile;
+        document.querySelector('.btn-next').disabled = false;
+      });
+    });
+
+    document.querySelectorAll('.toggle-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.toggle-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        state.management = opt.dataset.type;
+      });
+    });
+
+    const allocInputs = {
+      stocks: document.getElementById('alloc-stocks'),
+      bonds: document.getElementById('alloc-bonds'),
+      etf: document.getElementById('alloc-etf'),
+      crypto: document.getElementById('alloc-crypto')
+    };
+
+    function updateAllocation() {
+      const sum = Object.values(allocInputs).reduce((acc, input) => acc + (parseFloat(input.value) || 0), 0);
+      const remaining = 100 - sum;
+      document.getElementById('alloc-sum').textContent = `${sum}%`;
+      document.getElementById('alloc-remaining').textContent = `${Math.max(0, remaining)}%`;
+      document.getElementById('btn-submit').disabled = sum !== 100;
+    }
+
+    Object.values(allocInputs).forEach(input => {
+      input.addEventListener('input', () => {
+        let val = parseFloat(input.value);
+        if (val < 0) input.value = 0;
+        if (val > 100) input.value = 100;
+        updateAllocation();
+      });
+    });
+
+    document.querySelectorAll('.btn-next').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (state.currentStep === 3) {
+          const sum = Object.values(allocInputs).reduce((acc, input) => acc + (parseFloat(input.value) || 0), 0);
+          if (sum !== 100) return;
+        }
+        goToStep(state.currentStep + 1);
+      });
+    });
+
+    document.querySelectorAll('.btn-prev').forEach(btn => {
+      btn.addEventListener('click', () => goToStep(state.currentStep - 1));
+    });
+
+    document.getElementById('btn-free-report').addEventListener('click', () => {
+      alert('Текстовый отчёт будет доступен после интеграции с backend.\nВ демо-версии: файл report.txt');
+    });
+
+    document.getElementById('btn-premium').addEventListener('click', () => goToStep(5));
+
+    document.getElementById('premiumForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('В демо-версии оплата имитируется.\nВ реальной версии: редирект на ЮKassa.');
+    });
+
+    const burger = document.getElementById('burgerBtn');
+    const nav = document.getElementById('mainNav');
+    burger.addEventListener('click', () => {
+      nav.classList.toggle('nav--active');
+      burger.classList.toggle('burger--active');
+    });
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('nav--active');
+        burger.classList.remove('burger--active');
+      });
+    });
+
+    const backToTopBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      backToTopBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+    backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    goToStep(1);
+  </script>
+</body>
+</html>
