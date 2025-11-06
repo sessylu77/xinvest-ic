@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Инвестиционный отчёт — Х инвестиции</title>
+  <style>
+    /* Стили встроены для надёжности в PDF */
+    :root {
+      --bg: #000;
+      --text: #fff;
+      --accent-mint: #00E6A8;
+      --accent-bronze: #B8860B;
+      --gray: #111;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 40px;
+      margin: 0;
+      line-height: 1.6;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--accent-bronze);
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent-mint);
+    }
+    .invoice {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    h1 {
+      font-size: 28px;
+      color: var(--accent-mint);
+      margin: 0 0 24px;
+    }
+    h2 {
+      font-size: 20px;
+      color: var(--accent-mint);
+      margin: 20px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #333;
+    }
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .profile-item {
+      background: var(--gray);
+      padding: 12px;
+      border-radius: 12px;
+    }
+    .profile-label {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    .profile-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .allocation-list {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0;
+    }
+    .allocation-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+    }
+    .allocation-item:last-child {
+      border-bottom: none;
+    }
+    .asset-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    .asset-table th,
+    .asset-table td {
+      padding: 10px;
+      text-align: left;
+      border: 1px solid #333;
+    }
+    .asset-table th {
+      background: var(--gray);
+      font-weight: 600;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    .contacts {
+      margin: 12px 0;
+    }
+    .disclaimer {
+      background: #222;
+      padding: 14px;
+      border-left: 3px solid var(--accent-bronze);
+      margin: 24px 0;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Х инвестиции</div>
+    <div class="invoice">
+      Отчёт №<span id="invoiceId">{{invoiceId}}</span><br>
+      Дата: <span id="date">{{date}}</span>
+    </div>
+  </div>
+
+  <h1>Ваш персонализированный инвестиционный отчёт</h1>
+
+  <h2>Ваш профиль</h2>
+  <div class="profile-grid">
+    <div class="profile-item">
+      <div class="profile-label">Риск-профиль</div>
+      <div class="profile-value">{{profile}}</div>
+    </div>
+    <div class="profile-item">
+      <div class="profile-label">Тип управления</div>
+      <div class="profile-value">{{management}}</div>
+    </div>
+  </div>
+
+  <h2>Распределение капитала</h2>
+  <ul class="allocation-list" id="allocationList">
+    {{allocation}}
+  </ul>
+
+  <h2>Рекомендуемые инструменты*</h2>
+  <table class="asset-table">
+    <thead>
+      <tr>
+        <th>Класс актива</th>
+        <th>Инструмент</th>
+        <th>Доля, %</th>
+      </tr>
+    </thead>
+    <tbody id="instrumentsTable">
+      {{instruments}}
+    </tbody>
+  </table>
+  <p style="font-size:13px; opacity:0.7; margin-top:8px">
+    * Подбор осуществляется алгоритмически на основе публичных данных. Не является индивидуальной инвестиционной рекомендацией.
+  </p>
+
+  <div class="disclaimer">
+    ⚠️ <strong>Важно:</strong> Данный отчёт носит исключительно информационный характер и не является индивидуальной инвестиционной рекомендацией в соответствии с Федеральным законом от 28.12.2013 № 404-ФЗ (ред. от 26.07.2023 № 315-ФЗ, в т.ч. ФЗ-259). ООО «Х инвестиции» не несёт ответственности за инвестиционные решения и возможные убытки. Доверительное управление осуществляется только на основании договора с лицензированной управляющей компанией.
+  </div>
+
+  <div class="footer">
+    <div class="contacts">
+      📞 +7 (495) 123-45-67<br>
+      ✉️ <a href="mailto:info@xinvest.ru" style="color:var(--accent-mint); text-decoration:none">info@xinvest.ru</a><br>
+      📲 <a href="https://t.me/xinvest" target="_blank" style="color:var(--accent-mint); text-decoration:none">@xinvest</a> (Telegram)<br>
+      📍 г. Москва, ул. Инвестиционная, д. 1
+    </div>
+    <p>С уважением,<br>Команда «Х инвестиции»</p>
+  </div>
+</body>
+</html>
