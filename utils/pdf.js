@@ -3,7 +3,8 @@ const require = createRequire(import.meta.url);
 const puppeteer = require('puppeteer');
 
 export async function generatePDF(data) {
-  const template = `
+  const templatePath = path.resolve(__dirname, '../templates/report.html');
+let template = fs.readFileSync(templatePath, 'utf8');
   <!DOCTYPE html><html><head><meta charset="utf-8"><style>
     body{font-family:Inter,sans-serif;background:#000;color:#fff;padding:40px}
     .logo{font-size:24px;font-weight:700;color:#00E6A8}
