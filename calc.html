@@ -251,13 +251,11 @@
 
             for (const sheet of sheetNames) {
                 try {
-                    const url = `https://docs.google.com/spreadsheets/d/1mbDXTf4lK1nOFIO3UGdI9fvDJy4wp_2YJYYrc31umzQ/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}`;
-                    const res = await fetch(`/api/instruments?sheet=${sheet}`);
+                    const url = `/api/instruments?sheet=${encodeURIComponent(sheet)}`;
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const data = await res.json();
                     instruments[sheet] = data;
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    const csv = await res.text();
-                    instruments[sheet] = parseSheetCSV(csv);
                 } catch (e) {
                     console.error(`Ошибка загрузки листа "${sheet}":`, e);
                     instruments[sheet] = [];
