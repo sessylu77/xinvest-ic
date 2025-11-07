@@ -91,22 +91,26 @@
       <h2>Распределение капитала</h2>
       <p>Сумма инвестиций: <strong>1 000 000 ₽</strong></p>
       <div class="allocation-inputs">
-        <div class="alloc-item">
-          <label>Акции (%)</label>
-          <input type="number" min="0" max="100" value="0" id="alloc-stocks">
-        </div>
-        <div class="alloc-item">
-          <label>Облигации (%)</label>
-          <input type="number" min="0" max="100" value="0" id="alloc-bonds">
-        </div>
-        <div class="alloc-item">
-          <label>ETF (%)</label>
-          <input type="number" min="0" max="100" value="0" id="alloc-etf">
-        </div>
-        <div class="alloc-item">
-          <label>Криптовалюта (%)</label>
-          <input type="number" min="0" max="100" value="0" id="alloc-crypto">
-        </div>
+          <div class="alloc-item">
+              <label>Акции (%)</label>
+              <input type="number" min="0" max="100" value="0" id="alloc-stocks">
+          </div>
+          <div class="alloc-item">
+              <label>Облигации (%)</label>
+              <input type="number" min="0" max="100" value="0" id="alloc-bonds">
+          </div>
+          <div class="alloc-item">
+              <label>ETF (%)</label>
+              <input type="number" min="0" max="100" value="0" id="alloc-etf">
+          </div>
+          <div class="alloc-item">
+              <label>Криптовалюта (%)</label>
+              <input type="number" min="0" max="100" value="0" id="alloc-crypto">
+          </div>
+          <div class="alloc-item">
+              <label>Фьючерсы (%)</label>
+              <input type="number" min="0" max="100" value="0" id="alloc-futs">
+          </div>
       </div>
       <div class="allocation-summary">
         <p>Текущая сумма: <span id="alloc-sum">0%</span> (<span id="alloc-remaining">100%</span> до 100%)</p>
@@ -187,107 +191,215 @@
   <button id="backToTop" class="back-to-top" aria-label="Наверх">↑</button>
 
   <script>
-    const state = { currentStep: 1, profile: null, management: 'passive' };
-    const steps = document.querySelectorAll('.step');
-    const progressBarSteps = document.querySelectorAll('.progress-step');
-    const progressLabel = document.getElementById('progressLabel');
+      // === State ===
+      const state = {
+          currentStep: 1,
+          profile: null,
+          management: 'passive',
+          allocation: { stocks: 0, bonds: 0, etf: 0, crypto: 0, futs: 0 }
+      };
 
-    function goToStep(step) {
-      if (step < 1 || step > 5) return;
-      state.currentStep = step;
-      steps.forEach(s => s.classList.add('hidden'));
-      document.querySelector(`.step[data-step="${step}"]`).classList.remove('hidden');
-      progressBarSteps.forEach((el, i) => el.classList.toggle('active', i + 1 <= step));
-      progressLabel.textContent = `Шаг ${step} из 4`;
-    }
+      // === DOM Elements ===
+      const steps = document.querySelectorAll('.step');
+      const progressBarSteps = document.querySelectorAll('.progress-step');
+      const progressLabel = document.getElementById('progressLabel');
+      const allocInputs = {
+          stocks: document.getElementById('alloc-stocks'),
+          bonds: document.getElementById('alloc-bonds'),
+          etf: document.getElementById('alloc-etf'),
+          crypto: document.getElementById('alloc-crypto'),
+          futs: document.getElementById('alloc-futs')
+      };
 
-    document.querySelectorAll('.profile-card').forEach(card => {
-      card.addEventListener('click', () => {
-        document.querySelectorAll('.profile-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        state.profile = card.dataset.profile;
-        document.querySelector('.btn-next').disabled = false;
-      });
-    });
+      // === Utils ===
+      function goToStep(step) {
+          if (step < 1 || step > 4) return;
+          state.currentStep = step;
+          steps.forEach(s => s.classList.add('hidden'));
+          document.querySelector(`.step[data-step="${step}"]`).classList.remove('hidden');
+          progressBarSteps.forEach((el, i) => el.classList.toggle('active', i + 1 <= step));
+          progressLabel.textContent = `Шаг ${step} из 4`;
+      }
 
-    document.querySelectorAll('.toggle-option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        document.querySelectorAll('.toggle-option').forEach(o => o.classList.remove('active'));
-        opt.classList.add('active');
-        state.management = opt.dataset.type;
-      });
-    });
-
-    const allocInputs = {
-      stocks: document.getElementById('alloc-stocks'),
-      bonds: document.getElementById('alloc-bonds'),
-      etf: document.getElementById('alloc-etf'),
-      crypto: document.getElementById('alloc-crypto')
-    };
-
-    function updateAllocation() {
-      const sum = Object.values(allocInputs).reduce((acc, input) => acc + (parseFloat(input.value) || 0), 0);
-      const remaining = 100 - sum;
-      document.getElementById('alloc-sum').textContent = `${sum}%`;
-      document.getElementById('alloc-remaining').textContent = `${Math.max(0, remaining)}%`;
-      document.getElementById('btn-submit').disabled = sum !== 100;
-    }
-
-    Object.values(allocInputs).forEach(input => {
-      input.addEventListener('input', () => {
-        let val = parseFloat(input.value);
-        if (val < 0) input.value = 0;
-        if (val > 100) input.value = 100;
-        updateAllocation();
-      });
-    });
-
-    document.querySelectorAll('.btn-next').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (state.currentStep === 3) {
+      function updateAllocation() {
           const sum = Object.values(allocInputs).reduce((acc, input) => acc + (parseFloat(input.value) || 0), 0);
-          if (sum !== 100) return;
-        }
-        goToStep(state.currentStep + 1);
+          const remaining = 100 - sum;
+          document.getElementById('alloc-sum').textContent = `${sum}%`;
+          document.getElementById('alloc-remaining').textContent = `${Math.max(0, remaining)}%`;
+          document.getElementById('btn-submit').disabled = sum !== 100;
+          Object.keys(allocInputs).forEach(k => {
+              state.allocation[k] = parseFloat(allocInputs[k].value) || 0;
+          });
+      }
+
+      function parseSheetCSV(csv, sheetName) {
+          const lines = csv.trim().split('\n');
+          if (lines.length < 2) return [];
+          return lines.slice(1).map(line => {
+              const cols = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(c => c.replace(/^"(.*)"$/, '$1').trim());
+              return { ticker: cols[0] || '—', name: cols[1] || '—' };
+          }).filter(i => i.ticker !== '—');
+      }
+
+      // === Генерация PDF в браузере (jsPDF + html2canvas не нужны — простой текстовый PDF) ===
+      function generatePDF(instruments) {
+          const { profile, management, allocation } = state;
+
+          const profileMap = {
+              conservative: 'Консервативный',
+              balanced: 'Сбалансированный',
+              aggressive: 'Агрессивный'
+          };
+          const managementMap = {
+              passive: 'Пассивное',
+              active: 'Активное'
+          };
+
+          const lines = [];
+          lines.push('Х инвестиции');
+          lines.push('');
+          lines.push('ИНВЕСТИЦИОННЫЙ ОТЧЁТ (демо)');
+          lines.push('============================');
+          lines.push(`Профиль: ${profileMap[profile] || '—'}`);
+          lines.push(`Управление: ${managementMap[management] || '—'}`);
+          lines.push('');
+          lines.push('РАСПРЕДЕЛЕНИЕ:');
+          Object.entries(allocation).forEach(([k, v]) => {
+              if (v > 0) {
+                  const names = { stocks: 'Акции', bonds: 'Облигации', etf: 'ETF', crypto: 'Криптовалюта', futs: 'Фьючерсы' };
+                  lines.push(`• ${names[k]}: ${v}%`);
+              }
+          });
+          lines.push('');
+          lines.push('РЕКОМЕНДУЕМЫЕ ИНСТРУМЕНТЫ:');
+
+          const sheetToName = {
+              'Акции': 'stocks',
+              'Облигации': 'bonds',
+              'ETF': 'etf',
+              'Криптовалюта': 'crypto',
+              'Фьючерсы': 'futs'
+          };
+
+          Object.entries(sheetToName).forEach(([sheet, key]) => {
+              if (allocation[key] > 0 && instruments[sheet]?.length) {
+                  lines.push('');
+                  lines.push(`${sheet}:`);
+                  instruments[sheet].slice(0, 3).forEach(t => lines.push(`  - ${t.ticker}`));
+              }
+          });
+
+          lines.push('');
+          lines.push('⚠️ Демо-отчёт. Не является ИР.');
+          lines.push('📞 +7 (495) 123-45-67');
+          lines.push('✉️ info@xinvest.ru');
+          lines.push('📲 @xinvest (Telegram)');
+
+          // Создаём простой PDF через data:URI (без библиотек)
+          const blob = new Blob([lines.join('\n')], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `xinvest-report-${Date.now()}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+          }, 100);
+      }
+
+      // === Загрузка и генерация ===
+      async function generateReport() {
+          const sheetNames = ['stocks', 'bonds', 'etf', 'crypto', 'futs'];
+          const instruments = {};
+
+          for (const sheet of sheetNames) {
+              try {
+                  const url = `https://docs.google.com/spreadsheets/d/1mbDXTf4lK1nOFIO3UGdI9fvDJy4wp_2YJYYrc31umzQ/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}`;
+                  const res = await fetch(url);
+                  const csv = await res.text();
+                  instruments[sheet] = parseSheetCSV(csv, sheet);
+              } catch (e) {
+                  instruments[sheet] = [];
+                  console.warn(`Не удалось загрузить ${sheet}`);
+              }
+          }
+
+          generatePDF(instruments);
+      }
+
+      // === Event Listeners ===
+      document.querySelectorAll('.profile-card').forEach(card => {
+          card.addEventListener('click', () => {
+              document.querySelectorAll('.profile-card').forEach(c => c.classList.remove('selected'));
+              card.classList.add('selected');
+              state.profile = card.dataset.profile;
+              document.querySelector('.btn-next').disabled = false;
+          });
       });
-    });
 
-    document.querySelectorAll('.btn-prev').forEach(btn => {
-      btn.addEventListener('click', () => goToStep(state.currentStep - 1));
-    });
-
-    document.getElementById('btn-free-report').addEventListener('click', () => {
-      alert('Текстовый отчёт будет доступен после интеграции с backend.\nВ демо-версии: файл report.txt');
-    });
-
-    document.getElementById('btn-premium').addEventListener('click', () => goToStep(5));
-
-    document.getElementById('premiumForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      alert('В демо-версии оплата имитируется.\nВ реальной версии: редирект на ЮKassa.');
-    });
-
-    const burger = document.getElementById('burgerBtn');
-    const nav = document.getElementById('mainNav');
-    burger.addEventListener('click', () => {
-      nav.classList.toggle('nav--active');
-      burger.classList.toggle('burger--active');
-    });
-
-    document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', () => {
-        nav.classList.remove('nav--active');
-        burger.classList.remove('burger--active');
+      document.querySelectorAll('.toggle-option').forEach(opt => {
+          opt.addEventListener('click', () => {
+              document.querySelectorAll('.toggle-option').forEach(o => o.classList.remove('active'));
+              opt.classList.add('active');
+              state.management = opt.dataset.type;
+          });
       });
-    });
 
-    const backToTopBtn = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => {
-      backToTopBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
-    });
-    backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      Object.values(allocInputs).forEach(input => {
+          input.addEventListener('input', () => {
+              let val = parseFloat(input.value);
+              if (isNaN(val) || val < 0) input.value = 0;
+              if (val > 100) input.value = 100;
+              updateAllocation();
+          });
+      });
 
-    goToStep(1);
+      document.querySelectorAll('.btn-next').forEach(btn => {
+          btn.addEventListener('click', () => {
+              if (state.currentStep === 3) {
+                  const sum = Object.values(state.allocation).reduce((a, b) => a + b, 0);
+                  if (sum !== 100) return;
+              }
+              goToStep(state.currentStep + 1);
+          });
+      });
+
+      document.querySelectorAll('.btn-prev').forEach(btn => {
+          btn.addEventListener('click', () => goToStep(state.currentStep - 1));
+      });
+
+      // === 🔥 КНОПКА ПРЕМИУМ → ГЕНЕРАЦИЯ PDF СРАЗУ ===
+      document.getElementById('btn-premium')?.addEventListener('click', () => {
+          if (!state.profile) {
+              alert('Сначала выберите профиль');
+              return;
+          }
+          generateReport();
+      });
+
+      // === Mobile menu & scroll ===
+      const burger = document.getElementById('burgerBtn');
+      const nav = document.getElementById('mainNav');
+      burger?.addEventListener('click', () => {
+          nav.classList.toggle('nav--active');
+          burger.classList.toggle('burger--active');
+      });
+      document.querySelectorAll('.nav-link')?.forEach(link => {
+          link.addEventListener('click', () => {
+              nav.classList.remove('nav--active');
+              burger?.classList.remove('burger--active');
+          });
+      });
+      const backToTopBtn = document.getElementById('backToTop');
+      window.addEventListener('scroll', () => {
+          if (backToTopBtn) backToTopBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
+      });
+      backToTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // === Start ===
+      goToStep(1);
   </script>
 </body>
 </html>
