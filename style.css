@@ -646,6 +646,15 @@ p {
         .portfolio-table td {
             padding: 6px 4px;
         }
+        .portfolio-table th {
+            white-space: normal;
+            word-break: break-all;
+            height: auto;
+            padding: 8px 6px;
+            vertical-align: top;
+            line-height: 1.2;
+            text-align: left;
+        }
 }
 
 @media (max-width: 480px) {
@@ -666,5 +675,23 @@ p {
         width: 44px;
         height: 44px;
         font-size: 1rem;
+    }
+}
+/* Перенос заголовков в 2 строки */
+.portfolio-table th {
+    white-space: normal;
+    word-wrap: break-word;
+    height: auto;
+    padding: 8px 6px;
+    vertical-align: top;
+    line-height: 1.2;
+}
+
+/* Уменьшаем шрифт, если нужно */
+@media (max-width: 768px) {
+    .portfolio-table th,
+    .portfolio-table td {
+        font-size: 0.85em;
+        padding: 4px 4px;
     }
 }

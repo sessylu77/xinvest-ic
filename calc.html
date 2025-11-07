@@ -231,7 +231,7 @@
                     <h3>${title}</h3>
                     <table class="portfolio-table">
                       <thead>
-                        <tr>${fields.map(f => `<th>${f}</th>`).join('')}</tr>
+                        <tr>${fields.map(f => `<th data-title="${f}">${f}</th>`).join('')}</tr>
                       </thead>
                       <tbody>
                         ${topItems.map(item => `
