@@ -204,18 +204,18 @@
             const container = document.getElementById('asset-cards');
             if (!container) return;
 
-            const order = ['stocks', 'bonds', 'etf', 'futs', 'crypto'];
-            const titles = {
-                stocks: 'Акции',
-                bonds: 'Облигации',
-                etf: 'ETF',
-                futs: 'Фьючерсы',
-                crypto: 'Криптовалюта'
-            };
+            // Порядок и заголовки — как в вашем макете
+            const order = [
+                { key: 'stocks', title: 'Акции' },
+                { key: 'bonds', title: 'Облигации' },
+                { key: 'etf', title: 'ETF' },
+                { key: 'futs', title: 'Фьючерсы' },
+                { key: 'crypto', title: 'Криптовалюта' }
+            ];
 
             container.innerHTML = '';
 
-            order.forEach(key => {
+            order.forEach(({ key, title }) => {
                 const pct = state.allocation[key] || 0;
                 if (pct === 0) return;
 
@@ -225,16 +225,17 @@
 
                 const items = instruments[key] || [];
                 const topItems = items.slice(0, key === 'stocks' ? 5 : 3);
+
                 const listHtml = topItems.length
                     ? topItems.map(i => `<li>${i.ticker}</li>`).join('')
                     : '<li>—</li>';
 
                 container.insertAdjacentHTML('beforeend', `
-            <div class="asset-card">
-              <h3>${titles[key]}</h3>
-              <ul>${listHtml}</ul>
-            </div>
-          `);
+      <div class="asset-card">
+        <h3>${title}</h3>
+        <ul>${listHtml}</ul>
+      </div>
+    `);
             });
         }
 
@@ -293,8 +294,9 @@
                     const sum = Object.values(state.allocation).reduce((a, b) => a + b, 0);
                     if (sum !== 100) return;
                 }
-                goToStep(state.currentStep + 1);
-                if (state.currentStep === 4) {
+                const nextStep = state.currentStep + 1;
+                goToStep(nextStep);
+                if (nextStep === 4) {
                     await loadAndRenderPortfolio();
                 }
             });
@@ -368,7 +370,7 @@
                         invoiceId: 'IK-' + Date.now(),
                         accountId: email,
                         email: email,
-                        JSON.stringify({
+                        data: JSON.stringify({
                             profile: state.profile === 'conservative' ? 'Консервативный' :
                                 state.profile === 'balanced' ? 'Сбалансированный' :
                                     state.profile === 'aggressive' ? 'Агрессивный' : '—',
