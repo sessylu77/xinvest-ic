@@ -15,7 +15,7 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="logo"><a href="index.html">Х инвестиции</a></div>
+            <div class="logo"><a href="index.html" class="logo-link">Х инвестиции</a></div>
             <nav class="nav" id="mainNav">
                 <a href="index.html#smart-money" class="nav-link">Smart Money</a>
                 <a href="index.html#algo-trading" class="nav-link">Algo trading</a>
@@ -252,7 +252,9 @@
             for (const sheet of sheetNames) {
                 try {
                     const url = `https://docs.google.com/spreadsheets/d/1mbDXTf4lK1nOFIO3UGdI9fvDJy4wp_2YJYYrc31umzQ/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}`;
-                    const res = await fetch(url);
+                    const res = await fetch(`/api/instruments?sheet=${sheet}`);
+                    const data = await res.json();
+                    instruments[sheet] = data;
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const csv = await res.text();
                     instruments[sheet] = parseSheetCSV(csv);
