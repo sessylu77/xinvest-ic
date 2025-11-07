@@ -146,6 +146,9 @@
     <button id="backToTop" class="back-to-top" aria-label="Наверх">↑</button>
 
     <script>
+        // === DEBUG MODE — ВРЕМЕННОЕ ОТКЛЮЧЕНИЕ ОПЛАТЫ ===
+        const DEBUG_MODE = true; // ← true = пропускать оплату, false = реальная оплата
+
         // === State ===
         const state = {
             currentStep: 1,
@@ -227,73 +230,12 @@
                     : '<li>—</li>';
 
                 container.insertAdjacentHTML('beforeend', `
-              <div class="asset-card">
-                <h3>${titles[key]}</h3>
-                <ul>${listHtml}</ul>
-              </div>
-            `);
+            <div class="asset-card">
+              <h3>${titles[key]}</h3>
+              <ul>${listHtml}</ul>
+            </div>
+          `);
             });
-        }
-
-        // === Генерация PDF в браузере ===
-        function generatePDF(instruments) {
-            const profileMap = {
-                conservative: 'Консервативный',
-                balanced: 'Сбалансированный',
-                aggressive: 'Агрессивный'
-            };
-            const managementMap = {
-                passive: 'Пассивное',
-                active: 'Активное'
-            };
-            const titles = {
-                stocks: 'Акции',
-                bonds: 'Облигации',
-                etf: 'ETF',
-                futs: 'Фьючерсы',
-                crypto: 'Криптовалюта'
-            };
-
-            const lines = [];
-            lines.push('Х инвестиции');
-            lines.push('');
-            lines.push('ИНВЕСТИЦИОННЫЙ ОТЧЁТ (демо)');
-            lines.push('============================');
-            lines.push(`Профиль: ${profileMap[state.profile] || '—'}`);
-            lines.push(`Управление: ${managementMap[state.management] || '—'}`);
-            lines.push('');
-            lines.push('РАСПРЕДЕЛЕНИЕ:');
-            Object.entries(state.allocation).forEach(([k, v]) => {
-                if (v > 0) lines.push(`• ${titles[k]}: ${v}%`);
-            });
-            lines.push('');
-            lines.push('РЕКОМЕНДУЕМЫЕ ИНСТРУМЕНТЫ:');
-
-            Object.entries(titles).forEach(([key, title]) => {
-                if (state.allocation[key] > 0 && instruments[key]?.length) {
-                    lines.push('');
-                    lines.push(`${title}:`);
-                    instruments[key].slice(0, 3).forEach(t => lines.push(`  - ${t.ticker}`));
-                }
-            });
-
-            lines.push('');
-            lines.push('⚠️ Демо-отчёт. Не является ИР.');
-            lines.push('📞 +7 (495) 123-45-67');
-            lines.push('✉️ info@xinvest.ru');
-            lines.push('📲 @xinvest (Telegram)');
-
-            const blob = new Blob([lines.join('\n')], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `xinvest-report-${Date.now()}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
         }
 
         // === Загрузка данных и отображение ===
@@ -315,7 +257,7 @@
             }
 
             renderPortfolio(instruments);
-            return instruments;
+            window._lastInstruments = instruments; // для PDF
         }
 
         // === Event Listeners ===
@@ -353,8 +295,7 @@
                 }
                 goToStep(state.currentStep + 1);
                 if (state.currentStep === 4) {
-                    const instruments = await loadAndRenderPortfolio();
-                    window._lastInstruments = instruments; // для PDF
+                    await loadAndRenderPortfolio();
                 }
             });
         });
@@ -363,17 +304,83 @@
             btn.addEventListener('click', () => goToStep(state.currentStep - 1));
         });
 
-        // === Кнопка "Получить за 290 ₽" → PDF ===
+        // === Кнопка "Получить за 290 ₽" — DEBUG MODE ===
         document.getElementById('btn-premium')?.addEventListener('click', () => {
             if (!state.profile) {
                 alert('Сначала выберите профиль');
                 return;
             }
-            if (!window._lastInstruments) {
-                alert('Сначала сформируйте портфель');
-                return;
+
+            if (DEBUG_MODE) {
+                // 🚀 Временный режим: не платим, сразу вызываем webhook
+                const email = 'debug@xinvest.ru'; // можно заменить на ваш email
+                const portfolioData = {
+                    profile: state.profile === 'conservative' ? 'Консервативный' :
+                        state.profile === 'balanced' ? 'Сбалансированный' :
+                            state.profile === 'aggressive' ? 'Агрессивный' : '—',
+                    management: state.management === 'passive' ? 'Пассивное' : 'Активное',
+                    allocation: state.allocation,
+                    email: email
+                };
+
+                // Вызов API напрямую
+                fetch('/api/webhook', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        Status: 0,
+                        InvoiceId: 'DEBUG-' + Date.now(),
+                        Email: email,
+                        Data: JSON.stringify(portfolioData)
+                    })
+                })
+                    .then(r => r.text())
+                    .then(text => {
+                        alert('✅ PDF отправлен на ' + email + '\n(в режиме DEBUG)');
+                        console.log('Webhook response:', text);
+                    })
+                    .catch(err => {
+                        alert('❌ Ошибка: ' + err.message);
+                        console.error('Webhook error:', err);
+                    });
+
+            } else {
+                // Реальный режим — оплата через CloudPayments
+                const email = document.getElementById('email').value.trim();
+                const consent = document.getElementById('consent').checked;
+
+                if (!email || !/\S+@\S+\.\S+/.test(email)) {
+                    alert('Укажите email');
+                    return;
+                }
+                if (!consent) {
+                    alert('Дайте согласие');
+                    return;
+                }
+
+                const widget = new cp.CloudPayments();
+                widget.charge(
+                    {
+                        publicId: 'ваш-public-id', // ← ЗАМЕНИТЕ!
+                        description: 'Отчёт от Х инвестиции',
+                        amount: 290,
+                        currency: 'RUB',
+                        invoiceId: 'IK-' + Date.now(),
+                        accountId: email,
+                        email: email,
+                        JSON.stringify({
+                            profile: state.profile === 'conservative' ? 'Консервативный' :
+                                state.profile === 'balanced' ? 'Сбалансированный' :
+                                    state.profile === 'aggressive' ? 'Агрессивный' : '—',
+                            management: state.management === 'passive' ? 'Пассивное' : 'Активное',
+                            allocation: state.allocation,
+                            email: email
+                        })
+                    },
+                    () => alert('✅ Оплата прошла! PDF отправлен на ' + email),
+                    (reason) => alert(reason === 'fail' ? 'Платёж отклонён' : 'Отменено')
+                );
             }
-            generatePDF(window._lastInstruments);
         });
 
         // === Mobile menu & scroll ===
