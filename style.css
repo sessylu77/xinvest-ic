@@ -394,10 +394,6 @@ p {
 .asset-card li:last-child {
   border-bottom: none;
 }
-    .asset-card.full-width {
-        width: 100%;
-        max-width: none;
-    }
 
 /* Buttons */
 .btn-next,
@@ -652,6 +648,12 @@ p {
     font-size: 1rem;
   }
 }
+.asset-card.full-width {
+    width: 100%;
+    max-width: none;
+    margin-bottom: 20px;
+}
+
 .portfolio-table {
     width: 100%;
     border-collapse: collapse;
