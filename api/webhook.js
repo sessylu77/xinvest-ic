@@ -23,7 +23,7 @@ export default async (req, res) => {
     const portfolio = JSON.parse(data.Data || '{}');
 
     // Загрузка данных из 5 листов
-    const sheets = ['stocks', 'bonds', 'etf', 'crypto', 'futs'];
+    const sheets = ['stocks', 'bonds', 'etf', 'futs', 'crypto'];
     const allInstruments = {};
 
     for (const sheet of sheets) {
