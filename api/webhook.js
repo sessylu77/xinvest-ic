@@ -55,10 +55,10 @@ export default async (req, res) => {
   </style></head><body>
     <div class="logo">Х инвестиции</div>
     <h1>Отчёт №${data.InvoiceId}</h1>
-    <h2>Акции</h2><ul>${allInstruments['Акции']?.map(t => `<li>${t}</li>`).join('') || '<li>—</li>'}</ul>
-    <h2>Облигации</h2><ul>${allInstruments['Облигации']?.map(t => `<li>${t}</li>`).join('') || '<li>—</li>'}</ul>
-    <h2>ETF</h2><ul>${allInstruments['ETF']?.map(t => `<li>${t}</li>`).join('') || '<li>—</li>'}</ul>
-    <h2>Криптовалюта</h2><ul>${allInstruments['Криптовалюта']?.map(t => `<li>${t}</li>`).join('') || '<li>—</li>'}</ul>
+    <h2>Акции</h2><ul>${allInstruments['stocks']?.map(t => `<li>${t}</li>`).join('') || '<li>—</li>'}</ul>
+    <h2>Облигации</h2><ul>${allInstruments['bonds']?.map(t => `<li>${t}</li>`).join('') || '<li>—</li>'}</ul>
+    <h2>ETF</h2><ul>${allInstruments['etf']?.map(t => `<li>${t}</li>`).join('') || '<li>—</li>'}</ul>
+    <h2>Криптовалюта</h2><ul>${allInstruments['crypto']?.map(t => `<li>${t}</li>`).join('') || '<li>—</li>'}</ul>
     <h2>Фьючерсы</h2><ul>${allInstruments['futs']?.map(t => `<li>${t}</li>`).join('') || '<li>—</li>'}</ul>
     <div style="margin-top:30px;font-size:13px;opacity:0.8">
       📞 +7 (495) 123-45-67 | ✉️ info@xinvest.ru | 📲 @xinvest (Telegram)<br>
