@@ -384,6 +384,10 @@ p {
 .asset-card li:last-child {
   border-bottom: none;
 }
+    .asset-card.full-width {
+        width: 100%;
+        max-width: none;
+    }
 
 /* Buttons */
 .btn-next,

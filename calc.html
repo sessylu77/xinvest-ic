@@ -20,9 +20,9 @@
                 <a href="index.html#smart-money" class="nav-link">Smart Money</a>
                 <a href="index.html#algo-trading" class="nav-link">Algo trading</a>
                 <a href="index.html#crypto" class="nav-link">Crypto</a>
-                <a href="calc.html" class="nav-link">Калькулятор</a> <!-- ← ПЕРЕД "О нас" -->
+                <a href="calc.html" class="nav-link">Калькулятор</a>
                 <a href="index.html#about" class="nav-link">О нас</a>
-                <!-- ❌ УБРАНО: <a href="index.html" class="nav-link">Главная</a> -->
+                
             </nav>
             <button class="burger" id="burgerBtn" aria-label="Меню">
                 <span></span>
@@ -196,30 +196,21 @@
             if (lines.length < 2) return [];
             return lines.slice(1).map(line => {
                 const cols = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(c => c.replace(/^"(.*)"$/, '$1').trim());
-                return {
-                    ticker: cols[0] || '—',
-                    name: cols[1] || '—',
-                    pe: cols[2] || '—',
-                    div_yield: cols[3] || '—',
-                    liquidity: cols[4] || '—',
-                    isin: cols[0] || '—', // для облигаций
-                    duration: cols[3] || '—', // для облигаций
-                    ter: cols[3] || '—' // для ETF
-                };
+                return { ticker: cols[0] || '—', name: cols[1] || '—' };
             }).filter(i => i.ticker !== '—');
         }
 
-        // === Динамическое отображение портфеля — карточки во всю ширину ===
+        // === Динамическое отображение портфеля ===
         function renderPortfolio(instruments) {
             const container = document.getElementById('asset-cards');
             if (!container) return;
 
             const order = [
-                { key: 'stocks', title: 'Акции', fields: ['ticker', 'name', 'pe', 'div_yield', 'liquidity'] },
-                { key: 'bonds', title: 'Облигации', fields: ['isin', 'name', 'yield', 'duration', 'liquidity'] },
-                { key: 'etf', title: 'ETF', fields: ['ticker', 'name', 'div_yield', 'ter', 'liquidity'] },
-                { key: 'futs', title: 'Фьючерсы', fields: ['ticker', 'name'] },
-                { key: 'crypto', title: 'Криптовалюта', fields: ['ticker', 'name'] }
+                { key: 'stocks', title: 'Акции', fields: ['Тикер', 'Название', 'Цена', 'Валюта', 'Сектор', 'Статус в индексе Moex', 'Smart-beta индекс акций', 'Доля в Портфеле акций, %'] },
+                { key: 'bonds', title: 'Облигации', fields: ['ISIN', 'Название', 'Цена, % от номинала', 'Тип облигации', 'Доходность (YTM), % годовых', 'Рейтинг', 'Smart-beta индекс облигаций', 'Доля в Портфеле облигаций, %'] },
+                { key: 'etf', title: 'ETF', fields: ['Тикер', 'Название УК', 'Цена', 'Валюта', 'Регион', 'Класс активов', 'Smart-beta индекс ETF', 'Доля в Портфеле ETF, %'] },
+                { key: 'futs', title: 'Фьючерсы', fields: ['Тикер', 'Название', 'Цена', 'Валюта', 'Smart-beta индекс фьючерсы', 'Доля в Портфеле фьючерсы, %'] },
+                { key: 'crypto', title: 'Криптовалюта', fields: ['Тикер', 'Название', 'Цена', 'Валюта', 'Smart-beta индекс крипто', 'Доля в Портфеле крипто, %'] }
             ];
 
             container.innerHTML = '';
@@ -246,14 +237,13 @@
                 }
 
                 container.insertAdjacentHTML('beforeend', `
-              <div class="asset-card full-width">
-                <h3>${title}</h3>
-                <ul>${listHtml}</ul>
-              </div>
-            `);
+      <div class="asset-card full-width">
+        <h3>${title}</h3>
+        <ul>${listHtml}</ul>
+      </div>
+    `);
             });
         }
-
         // === Загрузка данных и отображение ===
         async function loadAndRenderPortfolio() {
             const sheetNames = ['stocks', 'bonds', 'etf', 'futs', 'crypto'];
@@ -330,7 +320,7 @@
 
             if (DEBUG_MODE) {
                 // 🚀 Временный режим: не платим, сразу вызываем webhook
-                const email = 'debug@xinvest.ru';
+                const email = 'debug@xinvest'; // можно заменить на ваш email
                 const portfolioData = {
                     profile: state.profile === 'conservative' ? 'Консервативный' :
                         state.profile === 'balanced' ? 'Сбалансированный' :
@@ -340,6 +330,7 @@
                     email: email
                 };
 
+                // Вызов API напрямую
                 fetch('/api/webhook', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -384,7 +375,7 @@
                         invoiceId: 'IK-' + Date.now(),
                         accountId: email,
                         email: email,
-                        JSON.stringify({
+                        data: JSON.stringify({
                             profile: state.profile === 'conservative' ? 'Консервативный' :
                                 state.profile === 'balanced' ? 'Сбалансированный' :
                                     state.profile === 'aggressive' ? 'Агрессивный' : '—',
