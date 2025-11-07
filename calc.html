@@ -226,22 +226,23 @@
                 const items = instruments[key] || [];
                 const topItems = items.slice(0, key === 'stocks' ? 5 : 3);
 
-                let listHtml = '';
-                if (topItems.length) {
-                    listHtml = topItems.map(item => {
-                        const values = fields.map(f => item[f] || '—').join('<br>');
-                        return `<li>${values}</li>`;
-                    }).join('');
-                } else {
-                    listHtml = '<li>—</li>';
-                }
+                let tableHtml = `
+                  <div class="asset-card full-width">
+                    <h3>${title}</h3>
+                    <table class="portfolio-table">
+                      <thead>
+                        <tr>${fields.map(f => `<th>${f}</th>`).join('')}</tr>
+                      </thead>
+                      <tbody>
+                        ${topItems.map(item => `
+                          <tr>${fields.map(f => `<td>${item[f] || '—'}</td>`).join('')}</tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                `;
 
-                container.insertAdjacentHTML('beforeend', `
-      <div class="asset-card full-width">
-        <h3>${title}</h3>
-        <ul>${listHtml}</ul>
-      </div>
-    `);
+                container.insertAdjacentHTML('beforeend', tableHtml);
             });
         }
         // === Загрузка данных и отображение ===

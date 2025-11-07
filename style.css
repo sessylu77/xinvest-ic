@@ -652,3 +652,32 @@ p {
     font-size: 1rem;
   }
 }
+.portfolio-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+    .portfolio-table th,
+    .portfolio-table td {
+        padding: 6px 8px;
+        text-align: left;
+        border: 1px solid #333;
+        font-size: 0.9em;
+        white-space: nowrap;
+    }
+
+    .portfolio-table th {
+        background: #1a1a1a;
+        font-weight: 600;
+        color: var(--accent-mint);
+    }
+
+    .portfolio-table td {
+        color: #fff;
+        opacity: 0.8;
+    }
+
+    .portfolio-table tr:nth-child(even) {
+        background: #0d0d0d;
+    }
