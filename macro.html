@@ -128,7 +128,7 @@
                         borderColor: '#B8860B', // ← бронзовая линия
                         backgroundColor: (context) => {
                             const ctx = context.chart.ctx;
-                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
                             gradient.addColorStop(0, 'rgba(0, 230, 168, 0.2)'); // бронза (верх)
                             gradient.addColorStop(1, 'rgba(250, 10, 10, 0.2)'); // прозрачно (низ)
                             return gradient;
