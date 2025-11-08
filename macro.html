@@ -78,58 +78,50 @@
     <button id="backToTop" class="back-to-top" aria-label="Наверх">↑</button>
 
     <script>
-        // Mobile menu & scroll
-        const burger = document.getElementById('burgerBtn');
-        const nav = document.getElementById('mainNav');
-        burger?.addEventListener('click', () => {
-            nav.classList.toggle('nav--active');
-            burger.classList.toggle('burger--active');
-        });
-        document.querySelectorAll('.nav-link')?.forEach(link => {
-            link.addEventListener('click', () => {
-                nav.classList.remove('nav--active');
-                burger?.classList.remove('burger--active');
-            });
-        });
-        const backToTopBtn = document.getElementById('backToTop');
-        window.addEventListener('scroll', () => {
-            if (backToTopBtn) backToTopBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
-        });
-        backToTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
-        // === График: только 2 ряда — даты и значения ===
         document.addEventListener('DOMContentLoaded', async () => {
             const ctx = document.getElementById('macroChart').getContext('2d');
 
             try {
-                // ✅ Публичный JSON-API Google Sheets (работает без публикации CSV/HTML!)
-                const jsonUrl = 'https://docs.google.com/spreadsheets/d/1TCg67MegfV4YBvWYL4vMqNn70pmVBC23mYvEzWsjIrc/gviz/tq?gid=0&tq=';
+                // ✅ Используем pub + output=html (не pubhtml!)
+                const htmlUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTt-FblDSFP32kZwdZHafMwwBvlakoWs51f_0gXIJGe-PHG8_mYZBRU_looeBNnJzrm3pKvk7__oRTh/pub?gid=0&single=true&output=html';
 
-                const res = await fetch(jsonUrl);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const res = await fetch(htmlUrl);
+                if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
-                const text = await res.text();
-                // Удаляем callback-обёртку: `google.visualization.Query.setResponse(...)`
-                const jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/)?.[1] || text;
-                const data = JSON.parse(jsonStr);
+                const htmlText = await res.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
 
+                const table = doc.querySelector('table');
+                if (!table) throw new Error('Таблица не найдена в HTML');
+
+                const rows = Array.from(table.querySelectorAll('tr'));
                 const labels = [];
                 const values = [];
 
-                if (data.table && data.table.rows) {
-                    for (const row of data.table.rows) {
-                        if (row.c && row.c.length >= 2) {
-                            const date = row.c[0]?.v?.toString().trim() || '';
-                            const val = parseFloat(row.c[1]?.v);
-                            if (date && !isNaN(val)) {
-                                labels.push(date);
-                                values.push(val);
-                            }
+                // Пропускаем первую строку (заголовок), если есть
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].querySelectorAll('td');
+                    if (cells.length >= 2) {
+                        let date = cells[0].textContent.trim();
+                        let val = parseFloat(cells[1].textContent);
+
+                        // Google иногда оборачивает числа в <div>, пробуем глубже
+                        if (isNaN(val)) {
+                            const innerDiv = cells[1].querySelector('div');
+                            if (innerDiv) val = parseFloat(innerDiv.textContent);
+                        }
+
+                        if (date && !isNaN(val)) {
+                            // Опционально: привести дату к читаемому виду (например, "янв-24")
+                            // Здесь оставим как есть, или уточните формат
+                            labels.push(date);
+                            values.push(val);
                         }
                     }
                 }
 
-                if (labels.length === 0) throw new Error('Нет данных');
+                if (labels.length === 0) throw new Error('Данные не извлечены');
 
                 const chart = new Chart(ctx, {
                     type: 'line',
@@ -137,7 +129,7 @@
                         labels: labels,
                         datasets: [{
                             label: 'Макроданные',
-                            values,
+                            data: values, // ✅ Исправлено: было `values`, должно быть `data`
                             borderColor: '#B8860B',
                             borderWidth: 3,
                             pointRadius: 0,
@@ -150,8 +142,14 @@
                         maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: {
-                            x: { grid: { color: 'rgba(51,51,51,0.3)' }, ticks: { color: '#aaa' } },
-                            y: { grid: { color: 'rgba(51,51,51,0.3)' }, ticks: { color: '#aaa' } }
+                            x: {
+                                grid: { color: 'rgba(51,51,51,0.3)' },
+                                ticks: { color: '#aaa' }
+                            },
+                            y: {
+                                grid: { color: 'rgba(51,51,51,0.3)' },
+                                ticks: { color: '#aaa' }
+                            }
                         },
                         animation: {
                             onComplete: () => {
@@ -170,9 +168,6 @@
                         }
                     }
                 });
-
-                chart.canvas.parentNode.style.position = 'relative';
-                chart.canvas.parentNode.style.overflow = 'hidden';
 
             } catch (e) {
                 console.error('❌ Ошибка:', e);
