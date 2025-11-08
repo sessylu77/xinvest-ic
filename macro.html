@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Макромодели — макроэкономический барометр России от Х инвестиции. Прогноз на основе 50+ показателей.">
+    <meta name="description" content="Макромодели — макроэкономический барометр России от Х инвестиции.">
     <title>Макромодели — Х инвестиции</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -38,20 +40,14 @@
     </div>
 
     <!-- Main Content -->
-    <main class="calculator-container">
+    <main class="calculator-container" style="padding-top: 80px;">
         <div class="step" style="text-align: left;">
-            <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--accent-mint);">Макромодели</h2>
+            <h2 style="font-size: 2.6rem; margin-bottom: 0.5rem; color: var(--accent-mint);">Макромодели</h2>
             <p class="section-subtitle" style="margin-bottom: 2rem; font-size: 1.2rem;">Макроэкономический барометр России</p>
 
-            <!-- График в стиле сайта -->
+            <!-- График -->
             <div style="background: var(--gray); padding: 1.5rem; border-radius: var(--border-radius); margin: 2rem auto; max-width: 1000px;">
-                <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTt-FblDSFP32kZwdZHafMwwBvlakoWs51f_0gXIJGe-PHG8_mYZBRU_looeBNnJzrm3pKvk7__oRTh/pubchart?oid=1390111545&format=interactive"
-                        width="100%"
-                        height="400"
-                        frameborder="0"
-                        style="border: none; border-radius: 8px; background: var(--bg);"
-                        allowfullscreen>
-                </iframe>
+                <canvas id="macroChart" height="300"></canvas>
             </div>
 
             <!-- Описание -->
@@ -98,6 +94,80 @@
             if (backToTopBtn) backToTopBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
         });
         backToTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        // === График: только 2 ряда — даты и значения ===
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('macroChart').getContext('2d');
+
+            // Реальные данные из вашей таблицы (лист main)
+            const labels = [
+                '2020Q3', '2020Q4', '2021Q1', '2021Q2',
+                '2021Q3', '2021Q4', '2022Q1', '2022Q2',
+                '2022Q3', '2022Q4', '2023Q1', '2023Q2',
+                '2023Q3', '2023Q4', '2024Q1', '2024Q2',
+                '2024Q3', '2024Q4', '2025Q1', '2025Q2'
+            ];
+
+            const data = [
+                0.20, 0.35, 0.66, 0.72,
+                0.41, 0.29, -0.81, -0.29,
+                0.19, 0.29, 0.50, 0.49,
+                0.19, 0.00, -0.23, -0.57,
+                -0.35, -0.77, -0.63, -0.67
+            ];
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Макроданные',
+                            data: data,
+                            borderColor: '#00E6A8',
+                            backgroundColor: 'rgba(0, 230, 168, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#00E6A8',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff',
+                                font: { size: 13 }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#00E6A8',
+                            bodyColor: '#fff',
+                            borderColor: '#333',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 51, 51, 0.3)' },
+                            ticks: { color: '#aaa' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(51, 51, 51, 0.3)' },
+                            ticks: { color: '#aaa' },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
