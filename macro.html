@@ -102,22 +102,30 @@
             const ctx = document.getElementById('macroChart').getContext('2d');
 
             try {
-                const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTt-FblDSFP32kZwdZHafMwwBvlakoWs51f_0gXIJGe-PHG8_mYZBRU_looeBNnJzrm3pKvk7__oRTh/pubhtmlhttps://docs.google.com/spreadsheets/d/e/2PACX-1vTt-FblDSFP32kZwdZHafMwwBvlakoWs51f_0gXIJGe-PHG8_mYZBRU_looeBNnJzrm3pKvk7__oRTh/pubhtml?gid=0&single=truehttps://docs.google.com/spreadsheets/d/e/2PACX-1vTt-FblDSFP32kZwdZHafMwwBvlakoWs51f_0gXIJGe-PHG8_mYZBRU_looeBNnJzrm3pKvk7__oRTh/pubhtml?gid=0';
-                const res = await fetch(csvUrl);
+                // Публичный HTML-экспорт листа main
+                const htmlUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTt-FblDSFP32kZwdZHafMwwBvlakoWs51f_0gXIJGe-PHG8_mYZBRU_looeBNnJzrm3pKvk7__oRTh/pubhtml?gid=0&single=true';
+
+                const res = await fetch(htmlUrl);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-                const csv = await res.text();
-                const lines = csv.trim().split('\n').slice(1);
+                const html = await res.text();
 
+                // Парсим таблицу из HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const table = doc.querySelector('table'); // первая таблица на странице
+
+                if (!table) throw new Error('Таблица не найдена');
+
+                const rows = Array.from(table.querySelectorAll('tr')).slice(1); // без заголовка
                 const labels = [];
                 const data = [];
 
-                for (const line of lines) {
-                    if (!line.trim()) continue;
-                    const matches = line.match(/(".*?"|[^",\s]+)(?=,|$)/g) || [];
-                    if (matches.length >= 2) {
-                        const date = matches[0].replace(/^"(.*)"$/, '$1').trim();
-                        const valStr = matches[1].replace(/^"(.*)"$/, '$1').trim().replace(',', '.');
+                for (const row of rows) {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    if (cells.length >= 2) {
+                        const date = cells[0].textContent.trim();
+                        const valStr = cells[1].textContent.trim().replace(',', '.');
                         const val = parseFloat(valStr);
                         if (date && !isNaN(val)) {
                             labels.push(date);
@@ -126,13 +134,17 @@
                     }
                 }
 
+                if (labels.length === 0 || data.length === 0) {
+                    throw new Error('Нет данных для отображения');
+                }
+
                 const chart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: labels,
                         datasets: [{
                             label: 'Макроданные',
-                            data: data,
+                            data,
                             borderColor: '#B8860B',
                             borderWidth: 3,
                             pointRadius: 0,
