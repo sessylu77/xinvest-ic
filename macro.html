@@ -102,41 +102,34 @@
             const ctx = document.getElementById('macroChart').getContext('2d');
 
             try {
-                // Публичный HTML-экспорт листа main
-                const htmlUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTt-FblDSFP32kZwdZHafMwwBvlakoWs51f_0gXIJGe-PHG8_mYZBRU_looeBNnJzrm3pKvk7__oRTh/pubhtml?gid=0&single=true';
+                // ✅ Публичный JSON-API Google Sheets (работает без публикации CSV/HTML!)
+                const jsonUrl = 'https://docs.google.com/spreadsheets/d/1TCg67MegfV4YBvWYL4vMqNn70pmVBC23mYvEzWsjIrc/gviz/tq?gid=0&tq=';
 
-                const res = await fetch(htmlUrl);
+                const res = await fetch(jsonUrl);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-                const html = await res.text();
+                const text = await res.text();
+                // Удаляем callback-обёртку: `google.visualization.Query.setResponse(...)`
+                const jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/)?.[1] || text;
+                const data = JSON.parse(jsonStr);
 
-                // Парсим таблицу из HTML
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const table = doc.querySelector('table'); // первая таблица на странице
-
-                if (!table) throw new Error('Таблица не найдена');
-
-                const rows = Array.from(table.querySelectorAll('tr')).slice(1); // без заголовка
                 const labels = [];
-                const data = [];
+                const values = [];
 
-                for (const row of rows) {
-                    const cells = Array.from(row.querySelectorAll('td'));
-                    if (cells.length >= 2) {
-                        const date = cells[0].textContent.trim();
-                        const valStr = cells[1].textContent.trim().replace(',', '.');
-                        const val = parseFloat(valStr);
-                        if (date && !isNaN(val)) {
-                            labels.push(date);
-                            data.push(val);
+                if (data.table && data.table.rows) {
+                    for (const row of data.table.rows) {
+                        if (row.c && row.c.length >= 2) {
+                            const date = row.c[0]?.v?.toString().trim() || '';
+                            const val = parseFloat(row.c[1]?.v);
+                            if (date && !isNaN(val)) {
+                                labels.push(date);
+                                values.push(val);
+                            }
                         }
                     }
                 }
 
-                if (labels.length === 0 || data.length === 0) {
-                    throw new Error('Нет данных для отображения');
-                }
+                if (labels.length === 0) throw new Error('Нет данных');
 
                 const chart = new Chart(ctx, {
                     type: 'line',
@@ -144,7 +137,7 @@
                         labels: labels,
                         datasets: [{
                             label: 'Макроданные',
-                            data,
+                            values,
                             borderColor: '#B8860B',
                             borderWidth: 3,
                             pointRadius: 0,
@@ -182,12 +175,12 @@
                 chart.canvas.parentNode.style.overflow = 'hidden';
 
             } catch (e) {
-                console.error('❌ Ошибка загрузки макроданных:', e);
+                console.error('❌ Ошибка:', e);
                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 ctx.fillStyle = '#ffcc00';
                 ctx.font = '16px Inter';
                 ctx.textAlign = 'center';
-                ctx.fillText('Не удалось загрузить данные', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                ctx.fillText('Ошибка загрузки данных', ctx.canvas.width / 2, ctx.canvas.height / 2);
             }
         });
     </script>
