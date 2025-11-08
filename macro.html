@@ -40,29 +40,31 @@
     </div>
 
     <!-- Main Content -->
-    <main class="calculator-container" style="padding-top: 80px;">
-        <div class="step" style="text-align: left;">
-            <h2 style="font-size: 2.6rem; margin-bottom: 0.5rem; color: var(--accent-mint);">Макромодели</h2>
-            <p class="section-subtitle" style="margin-bottom: 2rem; font-size: 1.2rem;">Макроэкономический барометр России</p>
+    <main class="calculator-container">
+        <section class="section" style="padding-top: 100px;">
+            <div class="container">
+                <h2 class="section-title">Макромодели</h2>
+                <p class="section-subtitle">Макроэкономический барометр России</p>
 
-            <!-- График -->
-            <div style="background: var(--gray); padding: 1.5rem; border-radius: var(--border-radius); margin: 2rem auto; max-width: 1000px;">
-                <canvas id="macroChart" height="300"></canvas>
-            </div>
+                <!-- График -->
+                <div style="background: var(--gray); padding: 1.5rem; border-radius: var(--border-radius); margin: 2rem auto; max-width: 1000px;">
+                    <canvas id="macroChart" height="300"></canvas>
+                </div>
 
-            <!-- Описание -->
-            <div style="background: var(--gray); padding: 1.5rem; border-radius: var(--border-radius); margin-top: 2rem;">
-                <p style="opacity: 0.9; line-height: 1.7;">
-                    Макроэкономический барометр России — это динамическая модель, построенная на основе более чем 50 ключевых макропоказателей: ВВП, промышленное производство, инвестиции, розничные продажи, экспорт/импорт, инфляция, ставки ЦБ, индексы PMI, добыча нефти и газа, выпуск стали и цемента, грузооборот, зарплаты и многое другое.
-                </p>
-                <p style="opacity: 0.9; line-height: 1.7; margin-top: 1rem;">
-                    Модель отслеживает не только официальную статистику, но и опережающие сигналы из альтернативных источников: спутниковые данные по ночному освещению, данные по грузопотокам и потреблению энергии. Благодаря этому удаётся выявлять развороты экономической активности на 1–3 квартала раньше, чем появляются официальные отчёты.
-                </p>
-                <p style="opacity: 0.9; line-height: 1.7; margin-top: 1rem;">
-                    Барометр нормализован к 100 (средний уровень 2020–2024 гг.) и обновляется ежемесячно. Значения выше 100 указывают на ускорение экономики по сравнению с базой, ниже — на замедление. Инструмент используется командой Х инвестиции для калибровки портфельных решений по рисковым активам (акции, облигации) и хеджированию макрорисков.
-                </p>
+                <!-- Описание -->
+                <div style="background: var(--gray); padding: 1.5rem; border-radius: var(--border-radius); margin-top: 2rem;">
+                    <p style="opacity: 0.9; line-height: 1.7;">
+                        Макроэкономический барометр России — это динамическая модель, построенная на основе более чем 50 ключевых макропоказателей: ВВП, промышленное производство, инвестиции, розничные продажи, экспорт/импорт, инфляция, ставки ЦБ, индексы PMI, добыча нефти и газа, выпуск стали и цемента, грузооборот, зарплаты и многое другое.
+                    </p>
+                    <p style="opacity: 0.9; line-height: 1.7; margin-top: 1rem;">
+                        Модель отслеживает не только официальную статистику, но и опережающие сигналы из альтернативных источников: спутниковые данные по ночному освещению, данные по грузопотокам и потреблению энергии. Благодаря этому удаётся выявлять развороты экономической активности на 1–3 квартала раньше, чем появляются официальные отчёты.
+                    </p>
+                    <p style="opacity: 0.9; line-height: 1.7; margin-top: 1rem;">
+                        Барометр нормализован к 100 (средний уровень 2020–2024 гг.) и обновляется ежемесячно. Значения выше 100 указывают на ускорение экономики по сравнению с базой, ниже — на замедление. Инструмент используется командой Х инвестиции для калибровки портфельных решений по рисковым активам (акции, облигации) и хеджированию макрорисков.
+                    </p>
+                </div>
             </div>
-        </div>
+        </section>
     </main>
 
     <footer class="footer">
@@ -120,35 +122,31 @@
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'Макроданные',
-                            data: data,
-                            borderColor: '#00E6A8',
-                            backgroundColor: 'rgba(0, 230, 168, 0.1)',
-                            borderWidth: 3,
-                            pointRadius: 3,
-                            pointBackgroundColor: '#00E6A8',
-                            fill: true,
-                            tension: 0.3
-                        }
-                    ]
+                    datasets: [{
+                        label: 'Макроданные',
+                        data: data,
+                        borderColor: '#B8860B', // ← бронзовая линия
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                            gradient.addColorStop(0, 'rgba(184, 134, 11, 0.2)'); // бронза (верх)
+                            gradient.addColorStop(1, 'rgba(184, 134, 11, 0.05)'); // прозрачно (низ)
+                            return gradient;
+                        },
+                        borderWidth: 3,
+                        pointRadius: 0, // ← точки УБРАНЫ
+                        fill: true,
+                        tension: 0.3
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            labels: {
-                                color: '#fff',
-                                font: { size: 13 }
-                            }
-                        },
+                        legend: { display: false },
                         tooltip: {
-                            mode: 'index',
-                            intersect: false,
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: '#00E6A8',
+                            titleColor: '#B8860B',
                             bodyColor: '#fff',
                             borderColor: '#333',
                             borderWidth: 1
@@ -164,9 +162,24 @@
                             ticks: { color: '#aaa' },
                             beginAtZero: false
                         }
+                    },
+                    // Заливка отрицательной зоны — красная
+                    onDraw: (chart) => {
+                        const { ctx, chartArea: { top, bottom, left, right } } = chart;
+                        const yAxis = chart.scales.y;
+                        const zeroY = yAxis.getPixelForValue(0);
+
+                        if (zeroY > top && zeroY < bottom) {
+                            ctx.save();
+                            ctx.fillStyle = 'rgba(220, 50, 50, 0.15)'; // красный, прозрачный
+                            ctx.fillRect(left, zeroY, right - left, bottom - zeroY);
+                            ctx.restore();
+                        }
                     }
                 }
             });
+            chart.canvas.parentNode.style.position = 'relative';
+            chart.canvas.parentNode.style.overflow = 'hidden';
         });
     </script>
 </body>
