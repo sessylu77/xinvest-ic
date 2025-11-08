@@ -108,7 +108,6 @@
             let chartInstance = null;
 
             try {
-                // ✅ Ваша рабочая CSV-ссылка
                 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTt-FblDSFP32kZwdZHafMwwBvlakoWs51f_0gXIJGe-PHG8_mYZBRU_looeBNnJzrm3pKvk7__oRTh/pub?gid=0&single=true&output=csv';
 
                 const res = await fetch(csvUrl);
@@ -121,44 +120,47 @@
                 const data = [];
 
                 for (const line of lines) {
-                    // Простой, но надёжный CSV-парсер (без библиотек)
+                    // Универсальный парсинг CSV (с поддержкой кавычек)
+                    const fields = [];
                     let inQuotes = false;
                     let field = '';
-                    const fields = [];
 
                     for (let i = 0; i < line.length; i++) {
                         const char = line[i];
                         if (char === '"') {
                             inQuotes = !inQuotes;
                         } else if (char === ',' && !inQuotes) {
-                            fields.push(field);
+                            fields.push(field.trim());
                             field = '';
                         } else {
                             field += char;
                         }
                     }
-                    fields.push(field);
+                    fields.push(field.trim());
 
+                    // Ожидаем ровно 2 поля: "2020Q1", "0,20"
                     if (fields.length >= 2) {
-                        const date = fields[0].trim();
-                        const value = parseFloat(fields[1].trim());
-                        if (date && !isNaN(value)) {
-                            labels.push(date);
+                        const period = fields[0];
+                        // 🔥 КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: замена ',' → '.' для parseFloat
+                        const rawValue = fields[1];
+                        const value = parseFloat(rawValue.replace(',', '.'));
+                        if (period && !isNaN(value)) {
+                            labels.push(period);
                             data.push(value);
                         }
                     }
                 }
 
-                if (labels.length === 0) throw new Error('Нет данных в CSV');
+                if (labels.length === 0) throw new Error('Нет корректных данных (проверьте CSV — должны быть 2 столбца: период, число)');
 
-                // ✅ Создаём график — как у вас, 1 в 1
+                // ✅ Теперь данные правильные: [0.2, 0.35, 0.66, ..., -0.67]
                 chartInstance = new Chart(ctx, {
                     type: 'line',
-                    data: {
+                     {
                         labels: labels,
                         datasets: [{
                             label: 'Макроданные',
-                            data: data, // ← динамические данные
+                            data,
                             borderColor: '#B8860B',
                             backgroundColor: (context) => {
                                 const ctx = context.chart.ctx;
@@ -174,65 +176,66 @@
                         }]
                     },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: '#B8860B',
-                                bodyColor: '#fff',
-                                borderColor: '#333',
-                                borderWidth: 1
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: { color: 'rgba(51, 51, 51, 0.3)' },
-                                ticks: { color: '#aaa' }
-                            },
-                            y: {
-                                grid: { color: 'rgba(51, 51, 51, 0.3)' },
-                                ticks: { color: '#aaa' },
-                                beginAtZero: false
-                            }
-                        },
-                        animation: {
-                            onComplete: (animation) => {
-                                // ✅ Исправлено: chartInstance вместо chart
-                                const chart = animation.chart;
-                                const { ctx, chartArea: { top, bottom, left, right } } = chart;
-                                const yAxis = chart.scales.y;
-                                const zeroY = yAxis.getPixelForValue(0);
-
-                                if (zeroY > top && zeroY < bottom) {
-                                    ctx.save();
-                                    ctx.fillStyle = 'rgba(0, 230, 168, 0.15)';
-                                    ctx.fillRect(left, top, right - left, zeroY - top);
-                                    ctx.fillStyle = 'rgba(220, 50, 50, 0.15)';
-                                    ctx.fillRect(left, zeroY, right - left, bottom - zeroY);
-                                    ctx.restore();
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#B8860B',
+                            bodyColor: '#fff',
+                            borderColor: '#333',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: (context) => {
+                                    return `Значение: ${context.parsed.y.toFixed(2)}`;
                                 }
                             }
                         }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 51, 51, 0.3)' },
+                            ticks: { color: '#aaa' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(51, 51, 51, 0.3)' },
+                            ticks: { color: '#aaa' },
+                            beginAtZero: false
+                        }
+                    },
+                    animation: {
+                        onComplete: (animation) => {
+                            const chart = animation.chart;
+                            const { ctx, chartArea: { top, bottom, left, right } } = chart;
+                            const yAxis = chart.scales.y;
+                            const zeroY = yAxis.getPixelForValue(0);
+
+                            if (zeroY > top && zeroY < bottom) {
+                                ctx.save();
+                                ctx.fillStyle = 'rgba(0, 230, 168, 0.15)';
+                                ctx.fillRect(left, top, right - left, zeroY - top);
+                                ctx.fillStyle = 'rgba(220, 50, 50, 0.15)';
+                                ctx.fillRect(left, zeroY, right - left, bottom - zeroY);
+                                ctx.restore();
+                            }
+                        }
                     }
+                }
                 });
 
-                // Сохраняем ссылку на canvas как в вашем оригинале
-                chartInstance.canvas.parentNode.style.position = 'relative';
-                chartInstance.canvas.parentNode.style.overflow = 'hidden';
+        chartInstance.canvas.parentNode.style.position = 'relative';
+        chartInstance.canvas.parentNode.style.overflow = 'hidden';
 
             } catch (e) {
-                console.error('❌ Ошибка загрузки данных из Google Таблицы:', e);
-
-                // ✅ Безопасная отрисовка ошибки (как вы хотели — без лишнего)
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#ffcc00';
-                ctx.font = '16px "Inter", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('Ошибка загрузки данных', canvas.width / 2, canvas.height / 2);
-            }
+            console.error('❌ Ошибка:', e);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffcc00';
+            ctx.font = '16px "Inter", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Ошибка загрузки данных', canvas.width / 2, canvas.height / 2);
+        }
         });
     </script>
 </body>
