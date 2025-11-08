@@ -163,17 +163,26 @@
                             beginAtZero: false
                         }
                     },
-                    // Заливка отрицательной зоны — красная
-                    onDraw: (chart) => {
-                        const { ctx, chartArea: { top, bottom, left, right } } = chart;
-                        const yAxis = chart.scales.y;
-                        const zeroY = yAxis.getPixelForValue(0);
+                    // Заливка: положительная — зелёная, отрицательная — красная
+                    animation: {
+                        onComplete: () => {
+                            const { ctx, chartArea: { top, bottom, left, right } } = chart;
+                            const yAxis = chart.scales.y;
+                            const zeroY = yAxis.getPixelForValue(0);
 
-                        if (zeroY > top && zeroY < bottom) {
-                            ctx.save();
-                            ctx.fillStyle = 'rgba(220, 50, 50, 0.15)'; // красный, прозрачный
-                            ctx.fillRect(left, zeroY, right - left, bottom - zeroY);
-                            ctx.restore();
+                            if (zeroY > top && zeroY < bottom) {
+                                // Заливка положительной зоны — зелёная
+                                ctx.save();
+                                ctx.fillStyle = 'rgba(0, 230, 168, 0.15)'; // #00E6A8
+                                ctx.fillRect(left, top, right - left, zeroY - top);
+                                ctx.restore();
+
+                                // Заливка отрицательной зоны — красная
+                                ctx.save();
+                                ctx.fillStyle = 'rgba(220, 50, 50, 0.15)'; // #DC3232
+                                ctx.fillRect(left, zeroY, right - left, bottom - zeroY);
+                                ctx.restore();
+                            }
                         }
                     }
                 }
