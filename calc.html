@@ -51,96 +51,114 @@
 
     <!-- Main Content -->
     <main class="calculator-container">
-        <section class="section" style="padding-top: 100px;">
+        <section class="section page-header">
             <div class="container">
                 <h2 class="section-title">Калькулятор инвестиционного портфеля</h2>
-
-                <div class="step" id="step-profile" data-step="1">
-                    <h2>Выберите ваш профиль риска</h2>
-                    <p>Просто извлеките максимальную выгоду из своих активов — с помощью интеллектуальных решений, низких затрат и персонализированной поддержки в режиме реального времени.</p>
-                    <div class="profile-cards">
-                        <div class="profile-card" data-profile="conservative">
-                            <h3>Консервативный</h3>
-                            <p>Минимум риска, стабильный доход</p>
-                        </div>
-                        <div class="profile-card" data-profile="balanced">
-                            <h3>Сбалансированный</h3>
-                            <p>Умеренный риск, рост + доход</p>
-                        </div>
-                        <div class="profile-card" data-profile="aggressive">
-                            <h3>Агрессивный</h3>
-                            <p>Максимум роста, высокий риск</p>
-                        </div>
-                    </div>
-                    <button class="btn-next" disabled>Далее</button>
-                </div>
-
-                <div class="step hidden" id="step-management" data-step="2">
-                    <h2>Тип управления</h2>
-                    <p>Выберите подход, который вам ближе: автоматическое управление или самостоятельное.</p>
-                    <div class="toggle-group">
-                        <label class="toggle-option active" data-type="passive">
-                            <input type="radio" name="management" value="passive" checked>
-                            <span>Пассивное</span>
-                        </label>
-                        <label class="toggle-option" data-type="active">
-                            <input type="radio" name="management" value="active">
-                            <span>Активное</span>
-                        </label>
-                    </div>
-                    <button class="btn-prev">Назад</button>
-                    <button class="btn-next">Далее</button>
-                </div>
-
-                <div class="step hidden" id="step-allocation" data-step="3">
-                    <h2>Распределение капитала</h2>
-                    <p>Сумма инвестиций: <strong>1 000 000 ₽</strong></p>
-                    <div class="allocation-inputs">
-                        <div class="alloc-item">
-                            <label>Акции (%)</label>
-                            <input type="number" min="0" max="100" value="0" id="alloc-stocks">
-                        </div>
-                        <div class="alloc-item">
-                            <label>Облигации (%)</label>
-                            <input type="number" min="0" max="100" value="0" id="alloc-bonds">
-                        </div>
-                        <div class="alloc-item">
-                            <label>ETF (%)</label>
-                            <input type="number" min="0" max="100" value="0" id="alloc-etf">
-                        </div>
-                        <div class="alloc-item">
-                            <label>Фьючерсы (%)</label>
-                            <input type="number" min="0" max="100" value="0" id="alloc-futs">
-                        </div>
-                        <div class="alloc-item">
-                            <label>Криптовалюта (%)</label>
-                            <input type="number" min="0" max="100" value="0" id="alloc-crypto">
-                        </div>
-                    </div>
-                    <div class="allocation-summary">
-                        <p>Текущая сумма: <span id="alloc-sum">0%</span> (<span id="alloc-remaining">100%</span> до 100%)</p>
-                    </div>
-                    <button class="btn-prev">Назад</button>
-                    <button class="btn-next" id="btn-submit">Получить портфель</button>
-                </div>
-
-                <div class="step hidden result-step" id="step-result" data-step="4">
-                    <h2>Ваш базовый портфель</h2>
-                    <p>На основе вашего профиля и предпочтений мы сформировали оптимальное распределение.</p>
-                    <div class="asset-cards" id="asset-cards">
-                        <!-- Динамически заполняется JS -->
-                    </div>
-                    <div class="report-actions">
-                        <button class="btn-download" id="btn-free-report">Скачать текстовый отчёт</button>
-                    </div>
-                    <div class="premium-upsell">
-                        <h3>Хотите персонализированный PDF-отчёт?</h3>
-                        <p>Подробный анализ, сценарии, налоговая эффективность — всего за <strong>290 ₽</strong></p>
-                        <button class="btn-premium" id="btn-premium">Получить за 290 ₽</button>
-                    </div>
-                </div>
             </div>
         </section>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-step active" data-step="1">1</div>
+                <div class="progress-step" data-step="2">2</div>
+                <div class="progress-step" data-step="3">3</div>
+                <div class="progress-step" data-step="4">4</div>
+            </div>
+            <div class="progress-label" id="progressLabel">Шаг 1 из 4</div>
+        </div>
+
+        <div class="step" id="step-profile" data-step="1">
+            <div class="container">
+                <h2>Выберите ваш профиль риска</h2>
+                <p>Просто извлеките максимальную выгоду из своих активов — с помощью интеллектуальных решений, низких затрат и персонализированной поддержки в режиме реального времени.</p>
+                <div class="profile-cards">
+                    <div class="profile-card" data-profile="conservative">
+                        <h3>Консервативный</h3>
+                        <p>Минимум риска, стабильный доход</p>
+                    </div>
+                    <div class="profile-card" data-profile="balanced">
+                        <h3>Сбалансированный</h3>
+                        <p>Умеренный риск, рост + доход</p>
+                    </div>
+                    <div class="profile-card" data-profile="aggressive">
+                        <h3>Агрессивный</h3>
+                        <p>Максимум роста, высокий риск</p>
+                    </div>
+                </div>
+                <button class="btn-next" disabled>Далее</button>
+            </div>
+        </div>
+
+        <div class="step hidden" id="step-management" data-step="2">
+            <div class="container">
+                <h2>Тип управления</h2>
+                <p>Выберите подход, который вам ближе: автоматическое управление или самостоятельное.</p>
+                <div class="toggle-group">
+                    <label class="toggle-option active" data-type="passive">
+                        <input type="radio" name="management" value="passive" checked>
+                        <span>Пассивное</span>
+                    </label>
+                    <label class="toggle-option" data-type="active">
+                        <input type="radio" name="management" value="active">
+                        <span>Активное</span>
+                    </label>
+                </div>
+                <button class="btn-prev">Назад</button>
+                <button class="btn-next">Далее</button>
+            </div>
+        </div>
+
+        <div class="step hidden" id="step-allocation" data-step="3">
+            <div class="container">
+                <h2>Распределение капитала</h2>
+                <p>Сумма инвестиций: <strong>1 000 000 ₽</strong></p>
+                <div class="allocation-inputs">
+                    <div class="alloc-item">
+                        <label>Акции (%)</label>
+                        <input type="number" min="0" max="100" value="0" id="alloc-stocks">
+                    </div>
+                    <div class="alloc-item">
+                        <label>Облигации (%)</label>
+                        <input type="number" min="0" max="100" value="0" id="alloc-bonds">
+                    </div>
+                    <div class="alloc-item">
+                        <label>ETF (%)</label>
+                        <input type="number" min="0" max="100" value="0" id="alloc-etf">
+                    </div>
+                    <div class="alloc-item">
+                        <label>Фьючерсы (%)</label>
+                        <input type="number" min="0" max="100" value="0" id="alloc-futs">
+                    </div>
+                    <div class="alloc-item">
+                        <label>Криптовалюта (%)</label>
+                        <input type="number" min="0" max="100" value="0" id="alloc-crypto">
+                    </div>
+                </div>
+                <div class="allocation-summary">
+                    <p>Текущая сумма: <span id="alloc-sum">0%</span> (<span id="alloc-remaining">100%</span> до 100%)</p>
+                </div>
+                <button class="btn-prev">Назад</button>
+                <button class="btn-next" id="btn-submit">Получить портфель</button>
+            </div>
+        </div>
+
+        <div class="step hidden result-step" id="step-result" data-step="4">
+            <div class="container">
+                <h2>Ваш базовый портфель</h2>
+                <p>На основе вашего профиля и предпочтений мы сформировали оптимальное распределение.</p>
+                <div class="asset-cards" id="asset-cards">
+                    <!-- Динамически заполняется JS -->
+                </div>
+                <div class="report-actions">
+                    <button class="btn-download" id="btn-free-report">Скачать текстовый отчёт</button>
+                </div>
+                <div class="premium-upsell">
+                    <h3>Хотите персонализированный PDF-отчёт?</h3>
+                    <p>Подробный анализ, сценарии, налоговая эффективность — всего за <strong>290 ₽</strong></p>
+                    <button class="btn-premium" id="btn-premium">Получить за 290 ₽</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer class="footer">
