@@ -97,85 +97,49 @@
         });
         backToTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        // === График: загрузка данных из Google Таблицы (CSV) ===
-        document.addEventListener('DOMContentLoaded', async () => {
-            const canvas = document.getElementById('macroChart');
-            if (!canvas) return;
+        // === График: только 2 ряда — даты и значения ===
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('macroChart').getContext('2d');
 
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
+            // Реальные данные из вашей таблицы (лист main)
+            const labels = [
+                '2020Q3', '2020Q4', '2021Q1', '2021Q2',
+                '2021Q3', '2021Q4', '2022Q1', '2022Q2',
+                '2022Q3', '2022Q4', '2023Q1', '2023Q2',
+                '2023Q3', '2023Q4', '2024Q1', '2024Q2',
+                '2024Q3', '2024Q4', '2025Q1', '2025Q2'
+            ];
 
-            let chartInstance = null;
+            const data = [
+                0.20, 0.35, 0.66, 0.72,
+                0.41, 0.29, -0.81, -0.29,
+                0.19, 0.29, 0.50, 0.49,
+                0.19, 0.00, -0.23, -0.57,
+                -0.35, -0.77, -0.63, -0.67
+            ];
 
-            try {
-                const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTt-FblDSFP32kZwdZHafMwwBvlakoWs51f_0gXIJGe-PHG8_mYZBRU_looeBNnJzrm3pKvk7__oRTh/pub?gid=0&single=true&output=csv';
-
-                const res = await fetch(csvUrl);
-                if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
-
-                const csvText = await res.text();
-                const lines = csvText.trim().split('\n').filter(line => line.trim() !== '');
-
-                const labels = [];
-                const data = [];
-
-                for (const line of lines) {
-                    // Универсальный парсинг CSV (с поддержкой кавычек)
-                    const fields = [];
-                    let inQuotes = false;
-                    let field = '';
-
-                    for (let i = 0; i < line.length; i++) {
-                        const char = line[i];
-                        if (char === '"') {
-                            inQuotes = !inQuotes;
-                        } else if (char === ',' && !inQuotes) {
-                            fields.push(field.trim());
-                            field = '';
-                        } else {
-                            field += char;
-                        }
-                    }
-                    fields.push(field.trim());
-
-                    // Ожидаем ровно 2 поля: "2020Q1", "0,20"
-                    if (fields.length >= 2) {
-                        const period = fields[0];
-                        // 🔥 КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: замена ',' → '.' для parseFloat
-                        const rawValue = fields[1];
-                        const value = parseFloat(rawValue.replace(',', '.'));
-                        if (period && !isNaN(value)) {
-                            labels.push(period);
-                            data.push(value);
-                        }
-                    }
-                }
-
-                if (labels.length === 0) throw new Error('Нет корректных данных (проверьте CSV — должны быть 2 столбца: период, число)');
-
-                // ✅ Теперь данные правильные: [0.2, 0.35, 0.66, ..., -0.67]
-                chartInstance = new Chart(ctx, {
-                    type: 'line',
-                     {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Макроданные',
-                            data,
-                            borderColor: '#B8860B',
-                            backgroundColor: (context) => {
-                                const ctx = context.chart.ctx;
-                                const gradient = ctx.createLinearGradient(0, 0, 0, 250);
-                                gradient.addColorStop(0, 'rgba(0, 230, 168, 0.2)');
-                                gradient.addColorStop(1, 'rgba(250, 10, 10, 0.2)');
-                                return gradient;
-                            },
-                            borderWidth: 3,
-                            pointRadius: 0,
-                            fill: true,
-                            tension: 0.3
-                        }]
-                    },
-                    options: {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Макроданные',
+                        data: data,
+                        borderColor: '#B8860B', // ← бронзовая линия
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+                            gradient.addColorStop(0, 'rgba(0, 230, 168, 0.2)'); // бронза (верх)
+                            gradient.addColorStop(1, 'rgba(250, 10, 10, 0.2)'); // прозрачно (низ)
+                            return gradient;
+                        },
+                        borderWidth: 3,
+                        pointRadius: 0, // ← точки УБРАНЫ
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
@@ -185,12 +149,7 @@
                             titleColor: '#B8860B',
                             bodyColor: '#fff',
                             borderColor: '#333',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: (context) => {
-                                    return `Значение: ${context.parsed.y.toFixed(2)}`;
-                                }
-                            }
+                            borderWidth: 1
                         }
                     },
                     scales: {
@@ -204,38 +163,32 @@
                             beginAtZero: false
                         }
                     },
+                    // Заливка: положительная — зелёная, отрицательная — красная
                     animation: {
-                        onComplete: (animation) => {
-                            const chart = animation.chart;
+                        onComplete: () => {
                             const { ctx, chartArea: { top, bottom, left, right } } = chart;
                             const yAxis = chart.scales.y;
                             const zeroY = yAxis.getPixelForValue(0);
 
                             if (zeroY > top && zeroY < bottom) {
+                                // Заливка положительной зоны — зелёная
                                 ctx.save();
-                                ctx.fillStyle = 'rgba(0, 230, 168, 0.15)';
+                                ctx.fillStyle = 'rgba(0, 230, 168, 0.15)'; // #00E6A8
                                 ctx.fillRect(left, top, right - left, zeroY - top);
-                                ctx.fillStyle = 'rgba(220, 50, 50, 0.15)';
+                                ctx.restore();
+
+                                // Заливка отрицательной зоны — красная
+                                ctx.save();
+                                ctx.fillStyle = 'rgba(220, 50, 50, 0.15)'; // #DC3232
                                 ctx.fillRect(left, zeroY, right - left, bottom - zeroY);
                                 ctx.restore();
                             }
                         }
                     }
                 }
-                });
-
-        chartInstance.canvas.parentNode.style.position = 'relative';
-        chartInstance.canvas.parentNode.style.overflow = 'hidden';
-
-            } catch (e) {
-            console.error('❌ Ошибка:', e);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#ffcc00';
-            ctx.font = '16px "Inter", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('Ошибка загрузки данных', canvas.width / 2, canvas.height / 2);
-        }
+            });
+            chart.canvas.parentNode.style.position = 'relative';
+            chart.canvas.parentNode.style.overflow = 'hidden';
         });
     </script>
 </body>
